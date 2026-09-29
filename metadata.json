@@ -1,0 +1,6 @@
+{
+  "name": "SacredSteps: Daily Grace",
+  "description": "A faith-based recovery companion and digital sanctuary using the Sacred S.T.E.P. Method™ to dismantle lies, shame, and fear with grace, scripture, and real-time guidance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

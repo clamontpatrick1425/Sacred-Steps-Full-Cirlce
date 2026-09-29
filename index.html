@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      // Safeguard against iframe/sandbox environments where window.fetch has only a getter
+      (function() {
+        try {
+          var _origFetch = window.fetch;
+          var _fetchHandler = _origFetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _fetchHandler;
+            },
+            set: function(fn) {
+              _fetchHandler = fn;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e1) {
+          try {
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              var desc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+              if (desc && !desc.set) {
+                Object.defineProperty(Window.prototype, 'fetch', {
+                  get: desc.get || function() { return _origFetch; },
+                  set: function(fn) {
+                    try {
+                      Object.defineProperty(this, 'fetch', {
+                        value: fn,
+                        writable: true,
+                        configurable: true,
+                        enumerable: true
+                      });
+                    } catch (e) {
+                      _origFetch = fn;
+                    }
+                  },
+                  configurable: true,
+                  enumerable: true
+                });
+              }
+            }
+          } catch (e2) {}
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#FAF5F0" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    
+    <!-- Primary Page Title & Meta Description (SEO & AEO) -->
+    <title>Sacred Steps Daily Grace: Your Daily Sanctuary for Recovery</title>
+    <meta name="description" content="Sacred Steps Daily Grace: Your Daily Sanctuary for Recovery using the Sacred S.T.E.P. Method™ to dismantle lies, shame, and fear in real time with scripture, zero-knowledge encryption, and 988 lifeline safety." />
+    <meta name="keywords" content="Christian recovery app, 12 steps faith based, Sacred S.T.E.P. Method, addiction recovery scripture, grace over shame, zero-knowledge encrypted recovery journal, C. Lamont Patrick, 988 crisis support, sober counter, Celebrate Recovery companion" />
+    <meta name="author" content="C. Lamont Patrick" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="https://sacredsteps.app/" />
+
+    <!-- OpenGraph Social Cards -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sacredsteps.app/" />
+    <meta property="og:title" content="Sacred Steps Daily Grace: Your Daily Sanctuary for Recovery" />
+    <meta property="og:description" content="Your Daily Sanctuary for Recovery. Dismantle lies, shame, and fear with the Sacred S.T.E.P. Method™ by C. Lamont Patrick." />
+    <meta property="og:site_name" content="Sacred Steps Daily Grace" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sacred Steps Daily Grace: Your Daily Sanctuary for Recovery" />
+    <meta name="twitter:description" content="Your Daily Sanctuary for Recovery. Dismantle lies, shame, and fear with the Sacred S.T.E.P. Method™ by C. Lamont Patrick." />
+
+    <!-- GEO / Regional & Coverage Metadata -->
+    <meta name="geo.region" content="US" />
+    <meta name="geo.placename" content="United States" />
+    <meta name="target" content="all" />
+    <meta name="coverage" content="Worldwide" />
+    <meta name="distribution" content="Global" />
+
+    <!-- AI & Answer Engine Optimization (AEO) JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://sacredsteps.app/#webapp",
+          "name": "SacredSteps: Daily Grace",
+          "alternateName": ["SacredSteps", "Sacred S.T.E.P. Method App"],
+          "applicationCategory": "HealthApplication, LifestyleApplication",
+          "operatingSystem": "All modern browsers, iOS PWA, Android PWA",
+          "description": "A faith-based recovery companion and digital sanctuary using the Sacred S.T.E.P. Method™ to dismantle lies, shame, and fear with grace, scripture, zero-knowledge encryption, and 988 crisis support.",
+          "author": {
+            "@type": "Person",
+            "name": "C. Lamont Patrick"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "The Sacred S.T.E.P. Method™ (Scripture, Truth, Embrace, Practice)",
+            "Interactive 12-Step Guided Reflections based on C. Lamont Patrick's teachings",
+            "Zero-Knowledge AES-256 Client-Side Encrypted Journal Vault",
+            "SOS Calm in the Storm 4-7-8 Breathwork and 5-4-3-2-1 Grounding",
+            "Interactive Tactile Recovery Milestone Coins and Grace Journey Counter",
+            "One-Tap Sponsor Check-In and Fellowship Meeting Locators",
+            "Integrated 988 Suicide & Crisis Lifeline Guardrails"
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "@id": "https://sacredsteps.app/#step-method",
+          "name": "How to Dismantle Fear, Shame, and Cravings Using the Sacred S.T.E.P. Method™",
+          "description": "A 4-step Christ-centered spiritual framework created by C. Lamont Patrick to replace toxic lies and triggers with divine truth and micro-action.",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "name": "(S) Scripture Anchor",
+              "text": "Anchor your thoughts in a specific Biblical promise that counters the current trigger."
+            },
+            {
+              "@type": "HowToStep",
+              "name": "(T) Dismantling Truth",
+              "text": "Identify the underlying lie or shame and refute it with clear, biblical reality."
+            },
+            {
+              "@type": "HowToStep",
+              "name": "(E) Embrace Affirmation",
+              "text": "Speak aloud a first-person 'I am' affirmation to rebuild identity in God's grace."
+            },
+            {
+              "@type": "HowToStep",
+              "name": "(P) Practice Micro-Step",
+              "text": "Execute one immediate, actionable physical step (such as deep breathing or texting an accountability partner)."
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://sacredsteps.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the Sacred S.T.E.P. Method™ in recovery?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The Sacred S.T.E.P. Method™ is a 4-part grace-based spiritual framework developed by author C. Lamont Patrick: (S)cripture anchors the mind in God's Word, (T)ruth exposes and dismantles the underlying lie or shame, (E)mbrace provides a first-person affirmation of identity in grace, and (P)ractice assigns an immediate micro-step to establish peace."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does SacredSteps ensure journal privacy and zero-knowledge encryption?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SacredSteps uses client-side AES-256 GCM encryption with PBKDF2 key derivation (100,000 rounds) directly within the user's browser. Decryption keys are held strictly in temporary memory and are wiped when locked. No plaintext recovery reflections or personal inventories are ever stored on or transmitted to external servers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is SacredSteps a medical or psychiatric treatment service?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. SacredSteps: Daily Grace is a spiritual and devotional companion designed to support 12-step recovery through faith and prayer. It does not provide medical, psychological, or clinical care. If you are experiencing severe emotional pain or thoughts of self-harm, immediately call or text the 988 Suicide & Crisis Lifeline."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#FAF5F0] text-[#2D2421] antialiased selection:bg-[#FFD4C4]/50 selection:text-[#2D2421]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

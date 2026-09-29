@@ -1,0 +1,29 @@
+# SacredSteps: Daily Grace
+> A Christ-centered recovery companion and digital sanctuary using the Sacred S.T.E.P. Method™ created by C. Lamont Patrick.
+
+## Core Identity & Mission
+SacredSteps: Daily Grace is a faith-based recovery companion application designed to replace shame, isolation, and fear with the sovereign grace of God and the practical wisdom of the 12 Steps.
+
+Tagline: "A Path to Recovery, A Life in Grace"
+Author & Originator: C. Lamont Patrick
+
+## The Sacred S.T.E.P. Method™
+The Sacred S.T.E.P. Method™ is a real-time spiritual framework used when encountering triggers, cravings, or moments of intense fear or moral condemnation:
+1. **(S) Scripture Anchor**: Grounding the mind in a specific, immutable promise from God's Word that directly counters the presenting lie.
+2. **(T) Dismantling Truth**: Naming the specific lie, shame, or distorted belief, and dismantling it with one clear sentence of truth.
+3. **(E) Embrace Affirmation**: Speaking aloud a first-person "I am" affirmation rooted in grace and redemption.
+4. **(P) Practice Micro-Step**: Executing one immediate, tangible, doable action (e.g., 4-7-8 breathing, calling a sponsor, drinking water, praying).
+
+## Crisis Safety Protocol
+SacredSteps is not a clinical or medical psychiatric service. If any individual expresses suicidal thoughts or acute psychiatric crisis, the application immediately prompts the **988 Suicide & Crisis Lifeline** (Call/Text 988 in the US/Canada) or emergency services.
+
+## Zero-Knowledge Client-Side Cryptography
+- Algorithm: AES-256 GCM authenticated encryption.
+- Key Derivation: PBKDF2 with 100,000 SHA-256 iterations and unique per-entry salts.
+- Storage: 100% on-device (IndexedDB / LocalStorage). No unencrypted journal reflections are transmitted to external servers.
+
+## Verified Fellowship & Meeting Locators
+- Celebrate Recovery: https://www.celebraterecovery.com
+- Alcoholics Anonymous: https://www.aa.org
+- Narcotics Anonymous: https://www.na.org
+- SAMHSA Helpline: 1-800-662-4357

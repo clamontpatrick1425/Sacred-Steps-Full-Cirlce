@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Sacred Steps Daily Grace",
+  "short_name": "SacredSteps",
+  "description": "Your Daily Sanctuary for Recovery using the Sacred S.T.E.P. Method™.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#FAF5F0",
+  "background_color": "#FAF5F0",
+  "categories": ["lifestyle", "health", "books"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
