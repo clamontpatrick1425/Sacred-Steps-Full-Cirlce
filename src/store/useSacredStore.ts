@@ -90,6 +90,10 @@ interface SacredState {
   // Navigation & View
   activeTab: 'sanctuary' | 'anchor' | 'stepJournal' | 'guide' | 'journal' | 'milestones' | 'blueprint';
   deviceMockup: boolean;
+  selectedPhoneModel: string;
+  selectedPhoneColor: string;
+  phoneOrientation: 'portrait' | 'landscape';
+  phoneScale: number;
   crisisModalOpen: boolean;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
@@ -154,6 +158,10 @@ interface SacredState {
   // Actions
   setActiveTab: (tab: 'sanctuary' | 'anchor' | 'stepJournal' | 'guide' | 'journal' | 'milestones' | 'blueprint') => void;
   toggleDeviceMockup: () => void;
+  setSelectedPhoneModel: (modelId: string) => void;
+  setSelectedPhoneColor: (colorName: string) => void;
+  togglePhoneOrientation: () => void;
+  setPhoneScale: (scale: number) => void;
   setCrisisModalOpen: (open: boolean) => void;
   toggleSound: () => void;
   toggleHaptics: () => void;
@@ -224,6 +232,10 @@ export const useSacredStore = create<SacredState>()(
       // Defaults
       activeTab: 'sanctuary',
       deviceMockup: false,
+      selectedPhoneModel: 'iphone-16-pro',
+      selectedPhoneColor: 'Natural Titanium',
+      phoneOrientation: 'portrait',
+      phoneScale: 1.0,
       crisisModalOpen: false,
       soundEnabled: true,
       hapticsEnabled: true,
@@ -503,6 +515,24 @@ export const useSacredStore = create<SacredState>()(
 
       toggleDeviceMockup: () => {
         set((state) => ({ deviceMockup: !state.deviceMockup }));
+      },
+
+      setSelectedPhoneModel: (modelId) => {
+        set({ selectedPhoneModel: modelId });
+      },
+
+      setSelectedPhoneColor: (colorName) => {
+        set({ selectedPhoneColor: colorName });
+      },
+
+      togglePhoneOrientation: () => {
+        set((state) => ({
+          phoneOrientation: state.phoneOrientation === 'portrait' ? 'landscape' : 'portrait'
+        }));
+      },
+
+      setPhoneScale: (scale) => {
+        set({ phoneScale: scale });
       },
 
       setCrisisModalOpen: (open) => {
@@ -1020,6 +1050,10 @@ export const useSacredStore = create<SacredState>()(
       partialize: (state) => ({
         activeTab: state.activeTab,
         deviceMockup: state.deviceMockup,
+        selectedPhoneModel: state.selectedPhoneModel,
+        selectedPhoneColor: state.selectedPhoneColor,
+        phoneOrientation: state.phoneOrientation,
+        phoneScale: state.phoneScale,
         soundEnabled: state.soundEnabled,
         hapticsEnabled: state.hapticsEnabled,
         todaysAnchor: state.todaysAnchor,
