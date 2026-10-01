@@ -20,7 +20,8 @@ import {
   Music,
   Headphones,
   Moon,
-  Bell
+  Bell,
+  Square
 } from 'lucide-react';
 import { useSacredStore } from '../store/useSacredStore';
 import { DAILY_DEVOTIONALS, RECOVERY_TRIGGERS } from '../data/devotionals';
@@ -45,8 +46,15 @@ export const SanctuaryHome: React.FC = () => {
     activeRitualModal,
     openRitualModal,
     closeRitualModal,
-    getTodaysRitual
+    getTodaysRitual,
+    preferredVoiceId,
+    isAudioPlaying,
+    activeAudioId,
+    setAudioPlaying,
+    stopAudio
   } = useSacredStore();
+
+  const isSpeakingDevotional = isAudioPlaying && activeAudioId === 'sanctuary-devotional';
 
   const daysInGrace = getDaysInGrace();
   const todaysRitual = getTodaysRitual();
@@ -110,7 +118,19 @@ export const SanctuaryHome: React.FC = () => {
   };
 
   const handleSpeakDevotional = () => {
-    sanctuaryAudio.speakScripture(`${currentDevotional.verseRef}. ${currentDevotional.verseText}. ${currentDevotional.reflection}`);
+    if (isSpeakingDevotional) {
+      stopAudio();
+      if (hapticsEnabled) triggerHaptic('soft');
+      return;
+    }
+
+    if (hapticsEnabled) triggerHaptic('pulse');
+    setAudioPlaying(true, currentDevotional.title, 'sanctuary-devotional');
+    sanctuaryAudio.speakScripture(
+      `${currentDevotional.verseRef}. ${currentDevotional.verseText}. ${currentDevotional.reflection}`,
+      preferredVoiceId,
+      currentDevotional.title
+    );
   };
 
   return (
@@ -370,10 +390,22 @@ export const SanctuaryHome: React.FC = () => {
           </div>
           <button
             onClick={handleSpeakDevotional}
-            className="p-1.5 rounded-lg text-[#796B64] hover:text-[#2D2421] hover:bg-[#F5EFEB] transition-colors"
-            title="Listen to Devotional"
+            className={`p-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+              isSpeakingDevotional
+                ? 'bg-[#2D2421] text-[#FFF9F5] shadow-xs ring-2 ring-[#FFD4C4]'
+                : 'text-[#796B64] hover:text-[#2D2421] hover:bg-[#F5EFEB]'
+            }`}
+            title={isSpeakingDevotional ? "Stop audio" : "Listen to Devotional"}
+            aria-label={isSpeakingDevotional ? "Stop audio" : "Listen to Devotional"}
           >
-            <Volume2 className="w-4 h-4" />
+            {isSpeakingDevotional ? (
+              <>
+                <Square className="w-3.5 h-3.5 fill-current text-white animate-pulse" />
+                <span className="text-[11px] font-semibold pr-0.5">Stop</span>
+              </>
+            ) : (
+              <Volume2 className="w-4 h-4" />
+            )}
           </button>
         </div>
 

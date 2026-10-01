@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Send, 
@@ -112,7 +112,10 @@ export const StepGuideScreen: React.FC = () => {
     setActiveTab, 
     setCrisisModalOpen,
     hapticsEnabled,
-    soundEnabled
+    soundEnabled,
+    preferredVoiceId,
+    setAudioPlaying,
+    stopAudio
   } = useSacredStore();
 
   const [inputStruggle, setInputStruggle] = useState('');
@@ -122,6 +125,14 @@ export const StepGuideScreen: React.FC = () => {
   const [completedSubSteps, setCompletedSubSteps] = useState<{ [k: string]: boolean }>({});
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [speakingSection, setSpeakingSection] = useState<'scripture' | 'truth' | 'embrace' | 'practice' | 'all' | null>(null);
+
+  useEffect(() => {
+    return sanctuaryAudio.onSpeakingChange((speaking) => {
+      if (!speaking) {
+        setSpeakingSection(null);
+      }
+    });
+  }, []);
 
   const handleSelectTrigger = (trigger: TriggerItem) => {
     setSelectedTrigger(trigger);
@@ -193,25 +204,20 @@ export const StepGuideScreen: React.FC = () => {
 
   const handleSpeakText = (text: string, section: 'scripture' | 'truth' | 'embrace' | 'practice' | 'all') => {
     if (speakingSection === section) {
-      sanctuaryAudio.cancelSpeech();
-      setSpeakingSection(null);
+      handleStopSpeaking();
       return;
     }
 
     sanctuaryAudio.cancelSpeech();
     if (soundEnabled) sanctuaryAudio.playGraceChime('gentle');
     setSpeakingSection(section);
-    sanctuaryAudio.speakScripture(text);
-
-    // Estimate speaking duration roughly ~130 words per min
-    const wordCount = text.split(/\s+/).length;
-    const durationMs = Math.max(3500, (wordCount / 130) * 60 * 1000);
-    setTimeout(() => {
-      setSpeakingSection(prev => (prev === section ? null : prev));
-    }, durationMs);
+    const title = `S.T.E.P. Guide: ${section.toUpperCase()}`;
+    setAudioPlaying(true, title, `step-guide-${section}`);
+    sanctuaryAudio.speakScripture(text, preferredVoiceId, title);
   };
 
   const handleStopSpeaking = () => {
+    stopAudio();
     sanctuaryAudio.cancelSpeech();
     setSpeakingSection(null);
   };

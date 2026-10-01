@@ -15,7 +15,8 @@ class SanctuaryAudioEngine {
   private activeSpeechId: number = 0;
   private isSpeakingFlag: boolean = false;
   private currentVoiceId: string = 'en-US-carter';
-  private speakingListeners: Set<(speaking: boolean) => void> = new Set();
+  private currentAudioTitle: string = '';
+  private speakingListeners: Set<(speaking: boolean, title?: string) => void> = new Set();
 
   setDefaultVoiceId(voiceId: string) {
     if (voiceId) this.currentVoiceId = voiceId;
@@ -25,11 +26,20 @@ class SanctuaryAudioEngine {
     return this.currentVoiceId;
   }
 
-  private setSpeaking(speaking: boolean) {
+  getCurrentAudioTitle(): string {
+    return this.currentAudioTitle;
+  }
+
+  private setSpeaking(speaking: boolean, title?: string) {
     this.isSpeakingFlag = speaking;
+    if (!speaking) {
+      this.currentAudioTitle = '';
+    } else if (title) {
+      this.currentAudioTitle = title;
+    }
     this.speakingListeners.forEach(listener => {
       try {
-        listener(speaking);
+        listener(speaking, this.currentAudioTitle);
       } catch {}
     });
   }
@@ -38,7 +48,7 @@ class SanctuaryAudioEngine {
     return this.isSpeakingFlag;
   }
 
-  onSpeakingChange(listener: (speaking: boolean) => void): () => void {
+  onSpeakingChange(listener: (speaking: boolean, title?: string) => void): () => void {
     this.speakingListeners.add(listener);
     return () => this.speakingListeners.delete(listener);
   }
@@ -248,12 +258,12 @@ class SanctuaryAudioEngine {
   }
 
   // Speak aloud with Murf AI studio voice (or gentle browser TTS fallback)
-  async speakScripture(text: string, voiceId?: string) {
+  async speakScripture(text: string, voiceId?: string, title?: string) {
     if (typeof window === 'undefined') return;
     this.cancelSpeech();
 
     const speechId = ++this.activeSpeechId;
-    this.setSpeaking(true);
+    this.setSpeaking(true, title || 'Spoken Reflection');
 
     try {
       // First attempt studio-quality Murf AI voice via our server proxy
@@ -307,11 +317,16 @@ class SanctuaryAudioEngine {
     }
   }
 
+  stopSpeech() {
+    this.cancelSpeech();
+  }
+
   cancelSpeech() {
     this.activeSpeechId++;
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
         this.currentAudio.src = '';
       } catch {}
       this.currentAudio = null;

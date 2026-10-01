@@ -102,6 +102,11 @@ interface SacredState {
   setPreferredVoiceId: (voiceId: string) => void;
   openVoiceModal: () => void;
   closeVoiceModal: () => void;
+  isAudioPlaying: boolean;
+  activeAudioTitle: string;
+  activeAudioId: string;
+  setAudioPlaying: (playing: boolean, title?: string, audioId?: string) => void;
+  stopAudio: () => void;
 
   // SOS "Calm in the Storm" Emergency Support System
   isSosOpen: boolean;
@@ -243,11 +248,25 @@ export const useSacredStore = create<SacredState>()(
       phoneScale: 1.0,
       crisisModalOpen: false,
       isVoiceModalOpen: false,
+      isAudioPlaying: false,
+      activeAudioTitle: '',
+      activeAudioId: '',
       soundEnabled: true,
       hapticsEnabled: true,
       preferredVoiceId: 'en-US-carter',
       openVoiceModal: () => set({ isVoiceModalOpen: true }),
       closeVoiceModal: () => set({ isVoiceModalOpen: false }),
+      setAudioPlaying: (playing, title, audioId) => {
+        set({
+          isAudioPlaying: playing,
+          activeAudioTitle: playing ? (title || 'Spoken Prayer') : '',
+          activeAudioId: playing ? (audioId || '') : ''
+        });
+      },
+      stopAudio: () => {
+        sanctuaryAudio.cancelSpeech();
+        set({ isAudioPlaying: false, activeAudioTitle: '', activeAudioId: '' });
+      },
       legalModal: null,
       openLegalModal: (type) => set({ legalModal: type }),
       closeLegalModal: () => set({ legalModal: null }),
@@ -1101,4 +1120,16 @@ export const useSacredStore = create<SacredState>()(
     }
   )
 );
+
+// Synchronize audio engine speaking state with SacredStore
+if (typeof window !== 'undefined') {
+  sanctuaryAudio.onSpeakingChange((speaking, title) => {
+    const store = useSacredStore.getState();
+    if (!speaking) {
+      store.setAudioPlaying(false, '', '');
+    } else {
+      store.setAudioPlaying(true, title || store.activeAudioTitle || 'Spoken Prayer', store.activeAudioId);
+    }
+  });
+}
 

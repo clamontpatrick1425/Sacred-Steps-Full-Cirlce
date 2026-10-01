@@ -20,6 +20,7 @@ import { AppFooter } from './components/AppFooter';
 import { SOSFloatingButton } from './components/SOSFloatingButton';
 import { SOSMenu } from './components/SOSMenu';
 import { MurfVoiceSettingsModal } from './components/MurfVoiceSettingsModal';
+import { GlobalAudioBar } from './components/GlobalAudioBar';
 import { readSponsorShareFromHash, SponsorShareData } from './services/encryptionService';
 import { BookOpen, ShieldCheck, X } from 'lucide-react';
 
@@ -75,6 +76,7 @@ export default function App() {
       <SOSFloatingButton />
       <SOSMenu />
       <MurfVoiceSettingsModal />
+      <GlobalAudioBar />
 
       {/* Sponsor Shared Entry Overlay if viewing via secure link */}
       {sponsorShareData && (

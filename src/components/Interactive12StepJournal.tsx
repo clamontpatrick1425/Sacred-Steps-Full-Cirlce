@@ -22,7 +22,8 @@ import {
   Send,
   Lock,
   ListTodo,
-  Printer
+  Printer,
+  Square
 } from 'lucide-react';
 import { useSacredStore } from '../store/useSacredStore';
 import { TWELVE_STEPS_BOOK_DATA, BookStepData, InventoryItem, AmendsItem } from '../data/twelveStepsBookData';
@@ -53,7 +54,12 @@ export const Interactive12StepJournal: React.FC = () => {
     setActiveTab,
     setCrisisModalOpen,
     cleanStartDate,
-    getDaysInGrace
+    getDaysInGrace,
+    preferredVoiceId,
+    isAudioPlaying,
+    activeAudioId,
+    setAudioPlaying,
+    stopAudio
   } = useSacredStore();
 
   const [showPdfModal, setShowPdfModal] = useState(false);
@@ -61,6 +67,9 @@ export const Interactive12StepJournal: React.FC = () => {
   const currentStepData = TWELVE_STEPS_BOOK_DATA[active12StepNumber - 1] || TWELVE_STEPS_BOOK_DATA[0];
   const isCurrentStepCompleted = Boolean(stepCompletedMap[active12StepNumber]);
   const isCurrentPrayerSpoken = Boolean(stepPrayerSpokenMap[active12StepNumber]);
+
+  const isSpeakingThisPrayer = isAudioPlaying && activeAudioId === `step-prayer-${active12StepNumber}`;
+  const isSpeakingThisAffirmation = isAudioPlaying && activeAudioId === `step-affirmation-${active12StepNumber}`;
 
   // Inventory modal/form state (for Step 4)
   const [newInvCategory, setNewInvCategory] = useState<'asset' | 'defect' | 'fear' | 'resentment'>('asset');
@@ -96,8 +105,36 @@ export const Interactive12StepJournal: React.FC = () => {
     }
   };
 
-  const handleSpeakPrayer = () => {
-    sanctuaryAudio.speakScripture(`${currentStepData.prayer.title}. ${currentStepData.prayer.text}`);
+  const handleTogglePlayPrayer = () => {
+    if (isSpeakingThisPrayer) {
+      stopAudio();
+      if (hapticsEnabled) triggerHaptic('soft');
+      return;
+    }
+
+    if (hapticsEnabled) triggerHaptic('pulse');
+    setAudioPlaying(true, currentStepData.prayer.title, `step-prayer-${active12StepNumber}`);
+    sanctuaryAudio.speakScripture(
+      `${currentStepData.prayer.title}. ${currentStepData.prayer.text}`,
+      preferredVoiceId,
+      currentStepData.prayer.title
+    );
+  };
+
+  const handleTogglePlayAffirmation = () => {
+    if (isSpeakingThisAffirmation) {
+      stopAudio();
+      if (hapticsEnabled) triggerHaptic('soft');
+      return;
+    }
+
+    if (hapticsEnabled) triggerHaptic('pulse');
+    setAudioPlaying(true, `Step ${active12StepNumber} Affirmation`, `step-affirmation-${active12StepNumber}`);
+    sanctuaryAudio.speakScripture(
+      currentStepData.affirmation.text,
+      preferredVoiceId,
+      `Step ${active12StepNumber} Affirmation`
+    );
   };
 
   const handleAddInventory = (e: React.FormEvent) => {
@@ -319,11 +356,23 @@ export const Interactive12StepJournal: React.FC = () => {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={handleSpeakPrayer}
-                className="p-1.5 rounded-lg text-[#796B64] hover:text-[#2D2421] hover:bg-[#FAF5F0] transition-colors"
-                title="Listen to prayer aloud"
+                onClick={handleTogglePlayPrayer}
+                className={`p-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+                  isSpeakingThisPrayer
+                    ? 'bg-[#2D2421] text-[#FFF9F5] shadow-xs ring-2 ring-[#FFD4C4]'
+                    : 'text-[#796B64] hover:text-[#2D2421] hover:bg-[#FAF5F0] border border-transparent hover:border-[#E8DED6]'
+                }`}
+                title={isSpeakingThisPrayer ? "Stop prayer audio" : "Listen to prayer aloud"}
+                aria-label={isSpeakingThisPrayer ? "Stop prayer audio" : "Listen to prayer aloud"}
               >
-                <Volume2 className="w-4 h-4" />
+                {isSpeakingThisPrayer ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current text-white animate-pulse" />
+                    <span className="text-[11px] font-semibold pr-0.5">Stop</span>
+                  </>
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
               </button>
               <button
                 onClick={() => togglePrayerSpoken(active12StepNumber)}
@@ -379,11 +428,23 @@ export const Interactive12StepJournal: React.FC = () => {
                   Spoken Affirmation
                 </span>
                 <button
-                  onClick={() => sanctuaryAudio.speakScripture(currentStepData.affirmation.text)}
-                  className="p-1 rounded text-[#796B64] hover:text-[#2D2421]"
-                  title="Speak affirmation aloud"
+                  onClick={handleTogglePlayAffirmation}
+                  className={`p-1.5 rounded-lg transition-all flex items-center gap-1 ${
+                    isSpeakingThisAffirmation
+                      ? 'bg-[#2D2421] text-white px-2 py-0.5 shadow-xs'
+                      : 'text-[#796B64] hover:text-[#2D2421] hover:bg-[#FAF5F0]'
+                  }`}
+                  title={isSpeakingThisAffirmation ? "Stop spoken affirmation" : "Speak affirmation aloud"}
+                  aria-label={isSpeakingThisAffirmation ? "Stop spoken affirmation" : "Speak affirmation aloud"}
                 >
-                  <Volume2 className="w-3.5 h-3.5" />
+                  {isSpeakingThisAffirmation ? (
+                    <>
+                      <Square className="w-3 h-3 fill-current animate-pulse text-white" />
+                      <span className="text-[10px] font-semibold">Stop</span>
+                    </>
+                  ) : (
+                    <Volume2 className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
               <p className="font-serif italic text-base sm:text-lg text-[#2D2421] font-medium leading-relaxed mb-3 bg-[#FAF5F0] p-3 rounded-xl border border-[#E8DED6]">

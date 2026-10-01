@@ -8,7 +8,8 @@ import {
   Sparkles, 
   ChevronLeft, 
   ChevronRight, 
-  Check 
+  Check,
+  Square
 } from 'lucide-react';
 import { DailyContent } from '../data/dailyAnchorData';
 import { sanctuaryAudio, triggerHaptic } from '../utils/haptics';
@@ -27,12 +28,24 @@ export const DailyAnchorCard: React.FC<DailyAnchorCardProps> = ({
   onComplete,
   className = '',
 }) => {
-  const { toggleSaveToGraceDeck, isSavedInGraceDeck, soundEnabled, hapticsEnabled } = useSacredStore();
+  const { 
+    toggleSaveToGraceDeck, 
+    isSavedInGraceDeck, 
+    soundEnabled, 
+    hapticsEnabled,
+    preferredVoiceId,
+    isAudioPlaying,
+    activeAudioId,
+    setAudioPlaying,
+    stopAudio
+  } = useSacredStore();
 
   // 3-section flow: 0 = Prayer, 1 = Bible Verse, 2 = Affirmation
   const [activeSection, setActiveSection] = useState<number>(0);
   const [isHeartAnimating, setIsHeartAnimating] = useState<boolean>(false);
   const [copiedNotice, setCopiedNotice] = useState<boolean>(false);
+
+  const isSpeakingThisCard = isAudioPlaying && activeAudioId === `anchor-${card.id}-${activeSection}`;
 
   // Swipe touch tracking for smooth 0.3s transition
   const touchStartX = useRef<number>(0);
@@ -92,13 +105,30 @@ export const DailyAnchorCard: React.FC<DailyAnchorCardProps> = ({
   };
 
   const handleSpeakAloud = () => {
-    if (activeSection === 0) {
-      sanctuaryAudio.speakScripture(`${card.prayer.title}. ${card.prayer.content}`);
-    } else if (activeSection === 1) {
-      sanctuaryAudio.speakScripture(`${card.verse.reference}. ${card.verse.text}`);
-    } else {
-      sanctuaryAudio.speakScripture(card.affirmation.text);
+    if (isSpeakingThisCard) {
+      stopAudio();
+      if (hapticsEnabled) triggerHaptic('soft');
+      return;
     }
+
+    if (hapticsEnabled) triggerHaptic('pulse');
+    const audioId = `anchor-${card.id}-${activeSection}`;
+    let textToSpeak = '';
+    let title = '';
+
+    if (activeSection === 0) {
+      textToSpeak = `${card.prayer.title}. ${card.prayer.content}`;
+      title = card.prayer.title;
+    } else if (activeSection === 1) {
+      textToSpeak = `${card.verse.reference}. ${card.verse.text}`;
+      title = `Scripture: ${card.verse.reference}`;
+    } else {
+      textToSpeak = card.affirmation.text;
+      title = 'Spoken Affirmation';
+    }
+
+    setAudioPlaying(true, title, audioId);
+    sanctuaryAudio.speakScripture(textToSpeak, preferredVoiceId, title);
   };
 
   const handleShare = () => {
@@ -183,14 +213,25 @@ export const DailyAnchorCard: React.FC<DailyAnchorCardProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Listen Aloud */}
+              {/* Listen Aloud / Stop */}
               <button
                 onClick={handleSpeakAloud}
-                className="p-2 rounded-xl text-[#796B64] hover:text-[#2D2421] hover:bg-[#F5EFEB] transition-colors"
-                title="Listen aloud with gentle cadence"
-                aria-label="Listen aloud"
+                className={`p-2 rounded-xl transition-all flex items-center gap-1.5 ${
+                  isSpeakingThisCard
+                    ? 'bg-[#2D2421] text-[#FFF9F5] shadow-xs ring-2 ring-[#FFD4C4]'
+                    : 'text-[#796B64] hover:text-[#2D2421] hover:bg-[#F5EFEB]'
+                }`}
+                title={isSpeakingThisCard ? "Stop audio" : "Listen aloud with gentle cadence"}
+                aria-label={isSpeakingThisCard ? "Stop audio" : "Listen aloud"}
               >
-                <Volume2 className="w-4 h-4" />
+                {isSpeakingThisCard ? (
+                  <>
+                    <Square className="w-4 h-4 fill-current text-white animate-pulse" />
+                    <span className="text-[11px] font-semibold pr-1">Stop</span>
+                  </>
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
               </button>
 
               {/* Share */}
