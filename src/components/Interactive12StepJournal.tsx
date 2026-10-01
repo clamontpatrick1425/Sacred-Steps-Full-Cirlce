@@ -228,7 +228,7 @@ export const Interactive12StepJournal: React.FC = () => {
       </div>
 
       {/* Step Navigator Tabs (Steps 1 through 12) */}
-      <div className="overflow-x-auto pb-2 -mx-2 px-2">
+      <div className="overflow-x-auto pb-2 -mx-2 px-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex items-center gap-1.5 min-w-max">
           {TWELVE_STEPS_BOOK_DATA.map((step) => {
             const isSelected = active12StepNumber === step.stepNumber;
@@ -238,7 +238,7 @@ export const Interactive12StepJournal: React.FC = () => {
               <button
                 key={step.stepNumber}
                 onClick={() => handleStepSelect(step.stepNumber)}
-                className={`py-2 px-3 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
+                className={`py-2 px-3 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all duration-200 shrink-0 ${
                   isSelected
                     ? 'bg-[#2D2421] text-[#FFF9F5] border-[#2D2421] shadow-xs'
                     : isCompleted
@@ -263,53 +263,56 @@ export const Interactive12StepJournal: React.FC = () => {
       </div>
 
       {/* Main Step Detail Container */}
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {/* Step Title & Theological Bridge */}
-        <div className="p-6 rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm relative overflow-hidden">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2.5 py-0.5 rounded-full bg-[#E6D5F0] text-[#3E2B52] text-[11px] font-semibold tracking-wider uppercase">
-                  Step {currentStepData.stepNumber} · {currentStepData.theme}
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm relative overflow-hidden">
+          {/* Top Metadata & Action Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-[#E6D5F0] text-[#3E2B52] text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase">
+                Step {currentStepData.stepNumber} · {currentStepData.theme}
+              </span>
+              {isCurrentStepCompleted && (
+                <span className="px-2 py-0.5 rounded-full bg-[#C8D5B9] text-[#243317] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Completed
                 </span>
-                {isCurrentStepCompleted && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#C8D5B9] text-[#243317] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Completed
-                  </span>
-                )}
-              </div>
-              <h2 className="font-serif text-xl sm:text-2xl text-[#2D2421] font-semibold leading-snug">
-                "{currentStepData.traditionalTitle}"
-              </h2>
-              <p className="font-scripture italic text-base sm:text-lg text-[#796B64] mt-1">
-                {currentStepData.bookSubtitle}
-              </p>
+              )}
             </div>
 
             <button
               onClick={() => toggleStepCompleted(active12StepNumber)}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 shrink-0 transition-all ${
+              className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 shrink-0 transition-all shadow-2xs ${
                 isCurrentStepCompleted
                   ? 'bg-[#C8D5B9] text-[#243317] border-[#B8C8A7]'
                   : 'bg-[#FAF5F0] text-[#796B64] border-[#E8DED6] hover:bg-[#F5EFEB] hover:text-[#2D2421]'
               }`}
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{isCurrentStepCompleted ? 'Step Completed ✓' : 'Mark Step Complete'}</span>
             </button>
           </div>
 
-          <p className="font-sans text-xs sm:text-sm text-[#4A3E39] leading-relaxed pt-2 border-t border-[#E8DED6]">
+          {/* Full-Width Step Title & Theological Bridge */}
+          <div className="space-y-1.5 mb-3.5">
+            <h2 className="font-serif text-base sm:text-xl md:text-2xl text-[#2D2421] font-bold leading-snug tracking-tight text-balance">
+              "{currentStepData.traditionalTitle}"
+            </h2>
+            <p className="font-scripture italic text-sm sm:text-base text-[#796B64] leading-relaxed">
+              {currentStepData.bookSubtitle}
+            </p>
+          </div>
+
+          <p className="font-sans text-xs sm:text-sm text-[#4A3E39] leading-relaxed pt-2.5 border-t border-[#E8DED6]">
             {currentStepData.chapterOverview}
           </p>
         </div>
 
         {/* C. Lamont Patrick's Step Prayer */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-[#FFF9F5] to-[#F5EFEB] border border-[#E8DED6] shadow-sm relative">
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#FFF9F5] to-[#F5EFEB] border border-[#E8DED6] shadow-sm relative">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#FFD4C4]" />
-              <h3 className="font-serif text-base text-[#2D2421] font-semibold">
+              <h3 className="font-serif text-sm sm:text-base text-[#2D2421] font-semibold">
                 {currentStepData.prayer.title}
               </h3>
             </div>
@@ -336,7 +339,7 @@ export const Interactive12StepJournal: React.FC = () => {
             </div>
           </div>
 
-          <p className="font-sans text-sm sm:text-base text-[#2D2421] leading-relaxed italic bg-[#FFF9F5]/80 p-4 rounded-2xl border border-[#E8DED6] mb-3">
+          <p className="font-sans text-xs sm:text-sm md:text-base text-[#2D2421] leading-relaxed italic bg-[#FFF9F5]/80 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E8DED6] mb-3 text-balance">
             "{currentStepData.prayer.text}"
           </p>
 
@@ -422,21 +425,21 @@ export const Interactive12StepJournal: React.FC = () => {
         {/* Step-Specific Special Interactive Tools */}
         {/* Step 4: Moral Inventory Tool */}
         {currentStepData.hasInventoryTool && (
-          <div className="p-6 rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="font-serif text-lg text-[#2D2421] font-semibold flex items-center gap-2">
+                <h3 className="font-serif text-base sm:text-lg text-[#2D2421] font-semibold flex items-center gap-2">
                   <ListTodo className="w-5 h-5 text-[#796B64]" />
                   <span>Step 4 Mindful Inventory Builder</span>
                 </h3>
-                <p className="text-xs text-[#796B64] mt-0.5">
+                <p className="text-xs text-[#796B64] mt-0.5 leading-relaxed">
                   The book emphasizes acknowledging our strengths and dreams alongside defects so shame is jackhammered into submission.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowInvForm(!showInvForm)}
-                className="px-3 py-1.5 rounded-xl bg-[#2D2421] text-[#FFF9F5] text-xs font-medium hover:bg-[#4A3E39] flex items-center gap-1 shadow-xs"
+                className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-[#2D2421] text-[#FFF9F5] text-xs font-medium hover:bg-[#4A3E39] flex items-center gap-1 shadow-xs"
               >
                 <Plus className="w-3.5 h-3.5 text-[#FFD4C4]" />
                 <span>Add Entry</span>
@@ -547,21 +550,21 @@ export const Interactive12StepJournal: React.FC = () => {
 
         {/* Steps 8 & 9: Amends Ledger Tool */}
         {currentStepData.hasAmendsTool && (
-          <div className="p-6 rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="font-serif text-lg text-[#2D2421] font-semibold flex items-center gap-2">
+                <h3 className="font-serif text-base sm:text-lg text-[#2D2421] font-semibold flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-[#796B64]" />
                   <span>Amends & Reconciliation Ledger</span>
                 </h3>
-                <p className="text-xs text-[#796B64] mt-0.5">
+                <p className="text-xs text-[#796B64] mt-0.5 leading-relaxed">
                   Making amends is a tender, divine act of love that seeks genuine restitution without reopening harm.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowAmendsForm(!showAmendsForm)}
-                className="px-3 py-1.5 rounded-xl bg-[#2D2421] text-[#FFF9F5] text-xs font-medium hover:bg-[#4A3E39] flex items-center gap-1 shadow-xs"
+                className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-[#2D2421] text-[#FFF9F5] text-xs font-medium hover:bg-[#4A3E39] flex items-center gap-1 shadow-xs"
               >
                 <Plus className="w-3.5 h-3.5 text-[#FFD4C4]" />
                 <span>Add Person</span>
@@ -664,9 +667,9 @@ export const Interactive12StepJournal: React.FC = () => {
         )}
 
         {/* Guided Book Reflection Prompts */}
-        <div className="p-6 rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="font-serif text-lg text-[#2D2421] font-semibold flex items-center gap-2">
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#FFF9F5] border border-[#E8DED6] shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+            <h3 className="font-serif text-base sm:text-lg text-[#2D2421] font-semibold flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-[#796B64]" />
               <span>Step {currentStepData.stepNumber} Reflective Journal</span>
             </h3>

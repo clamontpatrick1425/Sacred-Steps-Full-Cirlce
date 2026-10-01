@@ -95,8 +95,13 @@ interface SacredState {
   phoneOrientation: 'portrait' | 'landscape';
   phoneScale: number;
   crisisModalOpen: boolean;
+  isVoiceModalOpen: boolean;
   soundEnabled: boolean;
   hapticsEnabled: boolean;
+  preferredVoiceId: string;
+  setPreferredVoiceId: (voiceId: string) => void;
+  openVoiceModal: () => void;
+  closeVoiceModal: () => void;
 
   // SOS "Calm in the Storm" Emergency Support System
   isSosOpen: boolean;
@@ -237,8 +242,12 @@ export const useSacredStore = create<SacredState>()(
       phoneOrientation: 'portrait',
       phoneScale: 1.0,
       crisisModalOpen: false,
+      isVoiceModalOpen: false,
       soundEnabled: true,
       hapticsEnabled: true,
+      preferredVoiceId: 'en-US-wayne',
+      openVoiceModal: () => set({ isVoiceModalOpen: true }),
+      closeVoiceModal: () => set({ isVoiceModalOpen: false }),
       legalModal: null,
       openLegalModal: (type) => set({ legalModal: type }),
       closeLegalModal: () => set({ legalModal: null }),
@@ -541,6 +550,11 @@ export const useSacredStore = create<SacredState>()(
 
       toggleSound: () => {
         set((state) => ({ soundEnabled: !state.soundEnabled }));
+      },
+
+      setPreferredVoiceId: (voiceId) => {
+        sanctuaryAudio.setDefaultVoiceId(voiceId);
+        set({ preferredVoiceId: voiceId });
       },
 
       toggleHaptics: () => {
@@ -1054,6 +1068,7 @@ export const useSacredStore = create<SacredState>()(
         selectedPhoneColor: state.selectedPhoneColor,
         phoneOrientation: state.phoneOrientation,
         phoneScale: state.phoneScale,
+        preferredVoiceId: state.preferredVoiceId,
         soundEnabled: state.soundEnabled,
         hapticsEnabled: state.hapticsEnabled,
         todaysAnchor: state.todaysAnchor,

@@ -26,7 +26,8 @@ import {
   Maximize2,
   ZoomIn,
   ZoomOut,
-  Signal
+  Signal,
+  Mic
 } from 'lucide-react';
 import { useSacredStore } from '../store/useSacredStore';
 import { PHONE_MODELS, PhoneModel, DEFAULT_PHONE_ID } from '../data/phoneModelsData';
@@ -43,6 +44,7 @@ export const PhoneFrame: React.FC<PhoneFrameProps> = ({ children }) => {
     soundEnabled, 
     toggleSound, 
     openLegalModal,
+    openVoiceModal,
     selectedPhoneModel,
     setSelectedPhoneModel,
     selectedPhoneColor,
@@ -163,6 +165,15 @@ export const PhoneFrame: React.FC<PhoneFrameProps> = ({ children }) => {
               >
                 <Scale className="w-3.5 h-3.5 text-[#9C3E32]" />
                 <span>Terms</span>
+              </button>
+
+              <button
+                onClick={openVoiceModal}
+                className="hidden sm:flex items-center gap-1.5 text-xs text-[#2D2421] hover:text-[#7A5B0B] px-2.5 py-1.5 rounded-xl bg-[#FAF5F0] hover:bg-[#F5EFEB] border border-[#E8DED6] transition-colors font-medium shadow-2xs"
+                title="Murf AI Spiritual Voice Settings"
+              >
+                <Mic className="w-3.5 h-3.5 text-[#8A4F1D]" />
+                <span>Voice</span>
               </button>
 
               <button
@@ -389,6 +400,16 @@ export const PhoneFrame: React.FC<PhoneFrameProps> = ({ children }) => {
               </button>
             ))}
           </div>
+
+          {/* Murf AI Voice Settings */}
+          <button
+            onClick={openVoiceModal}
+            className="p-2 rounded-xl bg-white border border-[#E8DED6] text-[#796B64] hover:text-[#2D2421] transition-all shadow-2xs flex items-center gap-1"
+            title="Murf AI Spiritual Voice Settings"
+          >
+            <Mic className="w-3.5 h-3.5 text-[#8A4F1D]" />
+            <span className="hidden md:inline text-[11px] font-semibold">Voice</span>
+          </button>
 
           {/* Audio Chime Mute/Unmute */}
           <button

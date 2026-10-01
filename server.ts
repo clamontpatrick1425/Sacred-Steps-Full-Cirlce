@@ -294,6 +294,175 @@ Additional context: "${context || 'Seeking immediate real-time grace and groundi
   }
 });
 
+// ==========================================
+// Murf AI Text-to-Speech Integration
+// ==========================================
+const murfApiKey = process.env.MURF_API_KEY || '';
+
+// Curated devotional & contemplative voices
+const SACRED_MURF_VOICES = [
+  {
+    voiceId: 'en-US-wayne',
+    displayName: 'Wayne (Calm & Grounded)',
+    gender: 'Male',
+    style: 'Calm',
+    description: 'Deep, serene, contemplative tone ideal for scripture & meditation'
+  },
+  {
+    voiceId: 'en-US-carter',
+    displayName: 'Carter (Peaceful Narration)',
+    gender: 'Male',
+    style: 'Calm',
+    description: 'Gentle, comforting pastoral cadence'
+  },
+  {
+    voiceId: 'en-US-terrell',
+    displayName: 'Terrell (Inspirational)',
+    gender: 'Male',
+    style: 'Calm',
+    description: 'Warm, compassionate spiritual guide'
+  },
+  {
+    voiceId: 'en-US-marcus',
+    displayName: 'Marcus (Reverent & Mature)',
+    gender: 'Male',
+    style: 'Conversational',
+    description: 'Clear, steady, reassuring recovery voice'
+  },
+  {
+    voiceId: 'en-US-natalie',
+    displayName: 'Natalie (Grace & Gentle)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Soft, empathetic, nurturing presence'
+  },
+  {
+    voiceId: 'en-US-alina',
+    displayName: 'Alina (Warm & Compassionate)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Peaceful, tender reflection voice'
+  }
+];
+
+// Audio URL in-memory cache to save Murf character quota on repeated verses/prayers
+const ttsCache = new Map<string, { audioUrl: string; length: number; expires: number }>();
+
+app.get('/api/voice/status', (_req: Request, res: Response) => {
+  return res.json({
+    enabled: Boolean(murfApiKey),
+    provider: 'murf-ai',
+    voicesCount: SACRED_MURF_VOICES.length,
+    defaultVoice: 'en-US-wayne'
+  });
+});
+
+app.get('/api/voice/voices', (_req: Request, res: Response) => {
+  return res.json({
+    voices: SACRED_MURF_VOICES
+  });
+});
+
+app.post('/api/voice/speak', async (req: Request, res: Response) => {
+  try {
+    const { text, voiceId, style, rate, pitch } = req.body;
+
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.status(400).json({ error: 'Text is required for voice synthesis' });
+    }
+
+    // Clean text: strip markdown characters (*, _, #) and excess whitespace
+    const cleanText = text
+      .replace(/[*_#~`]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Check if Murf API Key is configured
+    if (!murfApiKey) {
+      return res.json({
+        success: false,
+        fallback: true,
+        message: 'Murf AI API key not configured on server'
+      });
+    }
+
+    const selectedVoiceId = voiceId || 'en-US-wayne';
+    const selectedStyle = style || 'Calm';
+
+    // Check cache
+    const cacheKey = `${selectedVoiceId}:${selectedStyle}:${cleanText.slice(0, 200)}`;
+    const cached = ttsCache.get(cacheKey);
+    if (cached && cached.expires > Date.now()) {
+      return res.json({
+        success: true,
+        audioUrl: cached.audioUrl,
+        audioLength: cached.length,
+        cached: true,
+        voiceId: selectedVoiceId
+      });
+    }
+
+    // Call Murf AI endpoint
+    const murfRes = await fetch('https://api.murf.ai/v1/speech/generate', {
+      method: 'POST',
+      headers: {
+        'api-key': murfApiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        voiceId: selectedVoiceId,
+        text: cleanText,
+        style: selectedStyle,
+        format: 'MP3',
+        rate: typeof rate === 'number' ? rate : -5,
+        pitch: typeof pitch === 'number' ? pitch : 0,
+        encodeAsBase64: false
+      })
+    });
+
+    if (!murfRes.ok) {
+      const errText = await murfRes.text();
+      console.warn('Murf AI API error:', murfRes.status, errText);
+      return res.json({
+        success: false,
+        fallback: true,
+        error: `Murf API responded with status ${murfRes.status}`
+      });
+    }
+
+    const murfData = await murfRes.json();
+    if (murfData.audioFile) {
+      // Cache for 24 hours
+      ttsCache.set(cacheKey, {
+        audioUrl: murfData.audioFile,
+        length: murfData.audioLengthInSeconds || 0,
+        expires: Date.now() + 24 * 60 * 60 * 1000
+      });
+
+      return res.json({
+        success: true,
+        audioUrl: murfData.audioFile,
+        audioLength: murfData.audioLengthInSeconds,
+        remainingCharacters: murfData.remainingCharacterCount,
+        voiceId: selectedVoiceId
+      });
+    }
+
+    return res.json({
+      success: false,
+      fallback: true,
+      error: 'No audioFile returned from Murf AI'
+    });
+  } catch (err: any) {
+    console.error('Error in /api/voice/speak:', err);
+    return res.json({
+      success: false,
+      fallback: true,
+      error: err.message || 'Internal server error during speech synthesis'
+    });
+  }
+});
+
 // Setup Vite middleware in dev or static serving in prod
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

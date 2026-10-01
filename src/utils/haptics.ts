@@ -10,6 +10,39 @@ class SanctuaryAudioEngine {
   private ambientTimer: NodeJS.Timeout | null = null;
   private currentAmbientType: 'gentle-cello' | 'flowing-stream' | 'soft-chime' | 'none' = 'none';
 
+  // Murf AI & Audio Playback State
+  private currentAudio: HTMLAudioElement | null = null;
+  private activeSpeechId: number = 0;
+  private isSpeakingFlag: boolean = false;
+  private currentVoiceId: string = 'en-US-wayne';
+  private speakingListeners: Set<(speaking: boolean) => void> = new Set();
+
+  setDefaultVoiceId(voiceId: string) {
+    if (voiceId) this.currentVoiceId = voiceId;
+  }
+
+  getDefaultVoiceId(): string {
+    return this.currentVoiceId;
+  }
+
+  private setSpeaking(speaking: boolean) {
+    this.isSpeakingFlag = speaking;
+    this.speakingListeners.forEach(listener => {
+      try {
+        listener(speaking);
+      } catch {}
+    });
+  }
+
+  isSpeaking(): boolean {
+    return this.isSpeakingFlag;
+  }
+
+  onSpeakingChange(listener: (speaking: boolean) => void): () => void {
+    this.speakingListeners.add(listener);
+    return () => this.speakingListeners.delete(listener);
+  }
+
   private initContext() {
     if (!this.ctx && typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -214,49 +247,147 @@ class SanctuaryAudioEngine {
     return this.currentAmbientType;
   }
 
-  // Speak aloud with gentle cadence
-  speakScripture(text: string) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  // Speak aloud with Murf AI studio voice (or gentle browser TTS fallback)
+  async speakScripture(text: string, voiceId?: string) {
+    if (typeof window === 'undefined') return;
+    this.cancelSpeech();
+
+    const speechId = ++this.activeSpeechId;
+    this.setSpeaking(true);
+
     try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.88; // Reverent, contemplative pace
-      utterance.pitch = 0.98;
-      
-      const voices = window.speechSynthesis.getVoices();
-      // Try to find a warm, natural English voice
-      const preferred = voices.find(v => 
-        (v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Serena')) && v.lang.startsWith('en')
-      ) || voices.find(v => v.lang.startsWith('en'));
+      // First attempt studio-quality Murf AI voice via our server proxy
+      const res = await fetch('/api/voice/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          voiceId: voiceId || this.currentVoiceId || 'en-US-wayne',
+          style: 'Calm',
+          rate: -5
+        })
+      });
 
-      if (preferred) {
-        utterance.voice = preferred;
+      // If user cancelled or triggered another audio while fetching, abort
+      if (this.activeSpeechId !== speechId) return;
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.audioUrl && this.activeSpeechId === speechId) {
+          const audio = new Audio(data.audioUrl);
+          audio.volume = 0.95;
+          this.currentAudio = audio;
+
+          audio.onended = () => {
+            if (this.activeSpeechId === speechId) {
+              this.currentAudio = null;
+              this.setSpeaking(false);
+            }
+          };
+
+          audio.onerror = () => {
+            // If audio load fails, fall back to browser speech synthesis
+            if (this.activeSpeechId === speechId) {
+              this.currentAudio = null;
+              this.speakBrowserUtterance(text, speechId);
+            }
+          };
+
+          await audio.play();
+          return;
+        }
       }
-
-      window.speechSynthesis.speak(utterance);
     } catch {
-      // Speech synthesis unsupported
+      // Network or fetch error
+    }
+
+    // Seamless fallback to browser speech synthesis if offline or error
+    if (this.activeSpeechId === speechId) {
+      this.speakBrowserUtterance(text, speechId);
     }
   }
 
   cancelSpeech() {
+    this.activeSpeechId++;
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.src = '';
+      } catch {}
+      this.currentAudio = null;
+    }
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       try {
         window.speechSynthesis.cancel();
-      } catch {
-        // ignore
+      } catch {}
+    }
+    this.setSpeaking(false);
+  }
+
+  async speakBreathGuidance(phrase: string, voiceId?: string) {
+    if (typeof window === 'undefined') return;
+    this.cancelSpeech();
+
+    const speechId = ++this.activeSpeechId;
+    this.setSpeaking(true);
+
+    try {
+      const res = await fetch('/api/voice/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: phrase,
+          voiceId: voiceId || this.currentVoiceId || 'en-US-wayne',
+          style: 'Calm',
+          rate: -8
+        })
+      });
+
+      if (this.activeSpeechId !== speechId) return;
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.audioUrl && this.activeSpeechId === speechId) {
+          const audio = new Audio(data.audioUrl);
+          audio.volume = 0.95;
+          this.currentAudio = audio;
+
+          audio.onended = () => {
+            if (this.activeSpeechId === speechId) {
+              this.currentAudio = null;
+              this.setSpeaking(false);
+            }
+          };
+
+          audio.onerror = () => {
+            if (this.activeSpeechId === speechId) {
+              this.currentAudio = null;
+              this.speakBrowserUtterance(phrase, speechId, 0.85);
+            }
+          };
+
+          await audio.play();
+          return;
+        }
       }
+    } catch {}
+
+    if (this.activeSpeechId === speechId) {
+      this.speakBrowserUtterance(phrase, speechId, 0.85);
     }
   }
 
-  speakBreathGuidance(phrase: string) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  private speakBrowserUtterance(text: string, speechId: number, rate: number = 0.88) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      this.setSpeaking(false);
+      return;
+    }
     try {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(phrase);
-      utterance.rate = 0.85;
-      utterance.pitch = 0.95;
-      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = rate; // Reverent pace
+      utterance.pitch = 0.98;
+
       const voices = window.speechSynthesis.getVoices();
       const preferred = voices.find(v => 
         (v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Serena')) && v.lang.startsWith('en')
@@ -266,9 +397,21 @@ class SanctuaryAudioEngine {
         utterance.voice = preferred;
       }
 
+      utterance.onend = () => {
+        if (this.activeSpeechId === speechId) {
+          this.setSpeaking(false);
+        }
+      };
+
+      utterance.onerror = () => {
+        if (this.activeSpeechId === speechId) {
+          this.setSpeaking(false);
+        }
+      };
+
       window.speechSynthesis.speak(utterance);
     } catch {
-      // ignore
+      this.setSpeaking(false);
     }
   }
 }
