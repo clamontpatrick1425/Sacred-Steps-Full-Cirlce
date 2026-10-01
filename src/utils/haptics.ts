@@ -14,7 +14,7 @@ class SanctuaryAudioEngine {
   private currentAudio: HTMLAudioElement | null = null;
   private activeSpeechId: number = 0;
   private isSpeakingFlag: boolean = false;
-  private currentVoiceId: string = 'en-US-wayne';
+  private currentVoiceId: string = 'en-US-carter';
   private speakingListeners: Set<(speaking: boolean) => void> = new Set();
 
   setDefaultVoiceId(voiceId: string) {
@@ -262,9 +262,9 @@ class SanctuaryAudioEngine {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          voiceId: voiceId || this.currentVoiceId || 'en-US-wayne',
+          voiceId: voiceId || this.currentVoiceId || 'en-US-carter',
           style: 'Calm',
-          rate: -5
+          rate: 0
         })
       });
 
@@ -337,9 +337,9 @@ class SanctuaryAudioEngine {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: phrase,
-          voiceId: voiceId || this.currentVoiceId || 'en-US-wayne',
+          voiceId: voiceId || this.currentVoiceId || 'en-US-carter',
           style: 'Calm',
-          rate: -8
+          rate: 0
         })
       });
 

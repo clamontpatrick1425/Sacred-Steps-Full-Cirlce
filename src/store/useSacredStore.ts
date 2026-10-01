@@ -245,7 +245,7 @@ export const useSacredStore = create<SacredState>()(
       isVoiceModalOpen: false,
       soundEnabled: true,
       hapticsEnabled: true,
-      preferredVoiceId: 'en-US-wayne',
+      preferredVoiceId: 'en-US-carter',
       openVoiceModal: () => set({ isVoiceModalOpen: true }),
       closeVoiceModal: () => set({ isVoiceModalOpen: false }),
       legalModal: null,

@@ -297,63 +297,80 @@ Additional context: "${context || 'Seeking immediate real-time grace and groundi
 // ==========================================
 // Murf AI Text-to-Speech Integration
 // ==========================================
-const murfApiKey = process.env.MURF_API_KEY || '';
+const murfApiKey = process.env.MURF_API_KEY || 'ap2_de06251f-5bb6-4e8d-befa-4f0cf61b0c39';
 
-// Curated devotional & contemplative voices
+// Curated devotional & contemplative voices (Gen2 high fidelity models)
 const SACRED_MURF_VOICES = [
   {
-    voiceId: 'en-US-wayne',
-    displayName: 'Wayne (Calm & Grounded)',
+    voiceId: 'en-US-carter',
+    displayName: 'Carter (Calm & Pastoral)',
     gender: 'Male',
     style: 'Calm',
-    description: 'Deep, serene, contemplative tone ideal for scripture & meditation'
+    description: 'Warm, compassionate baritone with gentle, natural human cadence'
   },
   {
-    voiceId: 'en-US-carter',
-    displayName: 'Carter (Peaceful Narration)',
+    voiceId: 'en-US-natalie',
+    displayName: 'Natalie (Warm & Gentle)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Soft, lifelike presence with natural breathing and empathy'
+  },
+  {
+    voiceId: 'en-US-wayne',
+    displayName: 'Wayne (Reverent & Grounded)',
     gender: 'Male',
     style: 'Calm',
-    description: 'Gentle, comforting pastoral cadence'
+    description: 'Deep, serene, contemplative tone for scripture and meditation'
   },
   {
     voiceId: 'en-US-terrell',
     displayName: 'Terrell (Inspirational)',
     gender: 'Male',
-    style: 'Calm',
-    description: 'Warm, compassionate spiritual guide'
+    style: 'Conversational',
+    description: 'Expressive, encouraging spiritual guide with heartfelt warmth'
+  },
+  {
+    voiceId: 'en-US-samantha',
+    displayName: 'Samantha (Tender & Serene)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Crystal-clear, emotionally comforting voice for daily devotionals'
   },
   {
     voiceId: 'en-US-marcus',
-    displayName: 'Marcus (Reverent & Mature)',
+    displayName: 'Marcus (Reassuring Recovery Guide)',
     gender: 'Male',
     style: 'Conversational',
-    description: 'Clear, steady, reassuring recovery voice'
-  },
-  {
-    voiceId: 'en-US-natalie',
-    displayName: 'Natalie (Grace & Gentle)',
-    gender: 'Female',
-    style: 'Conversational',
-    description: 'Soft, empathetic, nurturing presence'
-  },
-  {
-    voiceId: 'en-US-alina',
-    displayName: 'Alina (Warm & Compassionate)',
-    gender: 'Female',
-    style: 'Conversational',
-    description: 'Peaceful, tender reflection voice'
+    description: 'Steady, grounded companion voice for 12-Step prayers and reflection'
   }
 ];
 
 // Audio URL in-memory cache to save Murf character quota on repeated verses/prayers
 const ttsCache = new Map<string, { audioUrl: string; length: number; expires: number }>();
 
+function formatTextForNaturalHumanSpeech(raw: string): string {
+  return raw
+    // Strip markdown formatting
+    .replace(/[*_#~`]/g, '')
+    // Remove Bible version acronyms in parentheses: (NIV), (ESV), etc.
+    .replace(/\s*\((?:NIV|ESV|KJV|NKJV|NLT|CSB|NASB|MSG|AMP)\)/gi, '')
+    // Format scripture citations: "Psalm 34:18" -> "Psalm 34, verse 18"
+    .replace(/(\b[1-3]?\s?[A-Za-z]+)\s+(\d+):(\d+)/g, '$1 $2, verse $3')
+    // Convert harsh dashes to commas for gentle conversational pauses
+    .replace(/[—–]/g, ', ')
+    // Remove bracketed references
+    .replace(/\[[^\]]*\]/g, '')
+    // Clean redundant spaces
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 app.get('/api/voice/status', (_req: Request, res: Response) => {
   return res.json({
     enabled: Boolean(murfApiKey),
-    provider: 'murf-ai',
+    provider: 'murf-ai-gen2',
     voicesCount: SACRED_MURF_VOICES.length,
-    defaultVoice: 'en-US-wayne'
+    defaultVoice: 'en-US-carter'
   });
 });
 
@@ -371,11 +388,8 @@ app.post('/api/voice/speak', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Text is required for voice synthesis' });
     }
 
-    // Clean text: strip markdown characters (*, _, #) and excess whitespace
-    const cleanText = text
-      .replace(/[*_#~`]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Clean text and add natural breath cadence
+    const cleanText = formatTextForNaturalHumanSpeech(text);
 
     // Check if Murf API Key is configured
     if (!murfApiKey) {
@@ -386,8 +400,9 @@ app.post('/api/voice/speak', async (req: Request, res: Response) => {
       });
     }
 
-    const selectedVoiceId = voiceId || 'en-US-wayne';
-    const selectedStyle = style || 'Calm';
+    const selectedVoiceId = voiceId || 'en-US-carter';
+    const voiceMeta = SACRED_MURF_VOICES.find(v => v.voiceId === selectedVoiceId);
+    const selectedStyle = style || voiceMeta?.style || 'Calm';
 
     // Check cache
     const cacheKey = `${selectedVoiceId}:${selectedStyle}:${cleanText.slice(0, 200)}`;
@@ -398,11 +413,12 @@ app.post('/api/voice/speak', async (req: Request, res: Response) => {
         audioUrl: cached.audioUrl,
         audioLength: cached.length,
         cached: true,
-        voiceId: selectedVoiceId
+        voiceId: selectedVoiceId,
+        provider: 'murf-gen2'
       });
     }
 
-    // Call Murf AI endpoint
+    // Call Murf AI Gen2 Studio API endpoint
     const murfRes = await fetch('https://api.murf.ai/v1/speech/generate', {
       method: 'POST',
       headers: {
@@ -414,7 +430,10 @@ app.post('/api/voice/speak', async (req: Request, res: Response) => {
         text: cleanText,
         style: selectedStyle,
         format: 'MP3',
-        rate: typeof rate === 'number' ? rate : -5,
+        modelVersion: 'GEN2',
+        sampleRate: 48000,
+        channelType: 'STEREO',
+        rate: typeof rate === 'number' ? rate : 0,
         pitch: typeof pitch === 'number' ? pitch : 0,
         encodeAsBase64: false
       })
@@ -444,7 +463,8 @@ app.post('/api/voice/speak', async (req: Request, res: Response) => {
         audioUrl: murfData.audioFile,
         audioLength: murfData.audioLengthInSeconds,
         remainingCharacters: murfData.remainingCharacterCount,
-        voiceId: selectedVoiceId
+        voiceId: selectedVoiceId,
+        provider: 'murf-gen2'
       });
     }
 

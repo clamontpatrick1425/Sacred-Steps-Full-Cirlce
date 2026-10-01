@@ -32,46 +32,46 @@ interface MurfVoice {
 
 const DEFAULT_MURF_VOICES: MurfVoice[] = [
   {
-    voiceId: 'en-US-wayne',
-    displayName: 'Wayne (Calm & Grounded)',
+    voiceId: 'en-US-carter',
+    displayName: 'Carter (Calm & Pastoral)',
     gender: 'Male',
     style: 'Calm',
-    description: 'Deep, serene, contemplative tone ideal for scripture & meditation'
+    description: 'Warm, compassionate baritone with gentle, natural human cadence'
   },
   {
-    voiceId: 'en-US-carter',
-    displayName: 'Carter (Peaceful Narration)',
+    voiceId: 'en-US-natalie',
+    displayName: 'Natalie (Warm & Gentle)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Soft, lifelike presence with natural breathing and empathy'
+  },
+  {
+    voiceId: 'en-US-wayne',
+    displayName: 'Wayne (Reverent & Grounded)',
     gender: 'Male',
     style: 'Calm',
-    description: 'Gentle, comforting pastoral cadence for devotionals'
+    description: 'Deep, serene, contemplative tone for scripture and meditation'
   },
   {
     voiceId: 'en-US-terrell',
     displayName: 'Terrell (Inspirational)',
     gender: 'Male',
-    style: 'Calm',
-    description: 'Warm, compassionate spiritual guide with reverent pacing'
+    style: 'Conversational',
+    description: 'Expressive, encouraging spiritual guide with heartfelt warmth'
+  },
+  {
+    voiceId: 'en-US-samantha',
+    displayName: 'Samantha (Tender & Serene)',
+    gender: 'Female',
+    style: 'Conversational',
+    description: 'Crystal-clear, emotionally comforting voice for daily devotionals'
   },
   {
     voiceId: 'en-US-marcus',
-    displayName: 'Marcus (Reverent & Mature)',
+    displayName: 'Marcus (Reassuring Recovery Guide)',
     gender: 'Male',
     style: 'Conversational',
-    description: 'Clear, steady, reassuring recovery companion voice'
-  },
-  {
-    voiceId: 'en-US-natalie',
-    displayName: 'Natalie (Grace & Gentle)',
-    gender: 'Female',
-    style: 'Conversational',
-    description: 'Soft, empathetic, nurturing presence for daily prayers'
-  },
-  {
-    voiceId: 'en-US-alina',
-    displayName: 'Alina (Warm & Compassionate)',
-    gender: 'Female',
-    style: 'Conversational',
-    description: 'Peaceful, tender reflection voice for quiet moments'
+    description: 'Steady, grounded companion voice for 12-Step prayers and reflection'
   }
 ];
 
@@ -144,7 +144,7 @@ export const MurfVoiceSettingsModal: React.FC = () => {
           text: sampleText,
           voiceId: voice.voiceId,
           style: voice.style,
-          rate: -5
+          rate: 0
         })
       });
 
